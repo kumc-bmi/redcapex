@@ -1,0 +1,5 @@
+.env
+export
+venv
+*.ipynb
+.ipynb_checkpoints
