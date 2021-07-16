@@ -1,4 +1,4 @@
-run: venv
+run: clean venv
 	. venv/bin/activate && \
 	which python && \
 	mkdir -p ./export && \
@@ -10,7 +10,7 @@ run: venv
 	python download_redcap_data.py .env/redcap_projects_exports.ini ALL 'https://redcap.kumc.edu/api/'
 
 
-venv: venv_clear
+venv: venv_clean
 	# "creating python virtual env"
 	python -m venv venv
 	. ./venv/bin/activate && \
@@ -19,7 +19,14 @@ venv: venv_clear
 	pip install -r requirements_dev.txt  && \
 	pip freeze >  requirements_pip_freeze.txt  && \
 	which pip && which python && python --version
-	
-venv_clear:
+
+
+venv_clean:
 	# "deleting python virtual env"
-	rm -rf venv
+	rm -rf ./venv
+
+
+clean: venv_clean	
+	rm -rf ./export
+	rm -rf ./.env/redcap_projects_exports.csv
+	rm -rf ./.env/redcap_projects_exports.ini
