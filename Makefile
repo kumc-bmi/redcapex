@@ -12,6 +12,8 @@ run: clean venv
 
 venv: venv_clean
 	# "creating python3 virtual env"
+	python3 -m pip install --upgrade pip
+	python3 -m pip install virtualenv
 	python3 -m virtualenv venv
 	. ./venv/bin/activate && \
 	pip3 install --upgrade pip  && \
@@ -33,5 +35,3 @@ clean: venv_clean
 	
 install_python3:
 	sudo yum install -y python3-pip
-	python3 -m pip install --user --upgrade pip
-	python3 -m pip install --user virtualenv
