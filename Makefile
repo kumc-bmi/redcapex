@@ -33,5 +33,5 @@ clean: venv_clean
 	
 install_python3:
 	sudo yum install -y python3-pip
-	python3 -m pip3 install --user --upgrade pip
-	python3 -m pip3 install --user virtualenv
+	python3 -m pip install --user --upgrade pip
+	python3 -m pip install --user virtualenv
