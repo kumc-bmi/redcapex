@@ -1,6 +1,7 @@
 import configparser
+from os import subprocess
 
-
+# Function to collect Data from REDCap using request package:
 def make_redcap_api_call(redcap_api_url, data, logging, post):
 
     try:
@@ -18,7 +19,7 @@ def make_redcap_api_call(redcap_api_url, data, logging, post):
             %s
             """ % (e))
 
-
+#Function to read the config fiel in the ./.env location to have the parameters for exporting files
 def read_config(config_file, logging, Path):
 
     config = configparser.ConfigParser()
@@ -30,9 +31,23 @@ def read_config(config_file, logging, Path):
 
     return config
 
+# Function to place file in the P Drive:
+def shared_location_upload(location_dict, logging, ):
+    subprocess.check_call('')
+
+    # creating export path and filename
+    export_filename = request_payload['export_filename']
+    export_path = request_payload['export_path']
+    full_path = join(export_path, export_filename)
+
+    # exporting to file
+    full_path = Path(full_path)
+    full_path.write_bytes(data_string)
+
+    logging.info("File has been downloaded at %s ." % (full_path))
+
 
 def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api_url):
-
     # read config file
     config = read_config(config_file, logging, Path)
 
@@ -53,17 +68,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         data_string = make_redcap_api_call(
             redcap_api_url, request_payload, logging, post)
 
-        # creating export path and filename
-        export_filename = request_payload['export_filename']
-        export_path = request_payload['export_path']
-        full_path = join(export_path, export_filename)
-
-        # exporting to file
-        full_path = Path(full_path)
-        full_path.write_bytes(data_string)
-
-        logging.info("File has been downloaded at %s ." % (full_path))
-
+        shared_location_upload(request_payload, )
 
 if __name__ == "__main__":
 
