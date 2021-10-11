@@ -2,3 +2,4 @@ pandas
 requests
 pathlib2
 configparser
+python-dotenv==0.19.1

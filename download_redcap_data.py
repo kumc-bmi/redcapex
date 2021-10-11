@@ -1,5 +1,7 @@
 import configparser
 import subprocess
+import sys
+import os
 
 # Function to collect Data from REDCap using request package:
 def make_redcap_api_call(redcap_api_url, data, logging, post):
@@ -33,9 +35,10 @@ def read_config(config_file, logging, Path):
 
 # Function to place file in the P Drive:
 def shared_location_upload(logging, request_payload, data_string ):
-    p_drive_access_user = os.environ.get('jnk_user')
-    p_drive_access_pass = os.environ.get('jnk_pass')
-    subprocess.check_call(['sudo', 'mount','-t', 'cifs', '//kumc-data01/protected/', '/mnt/kumc-data01/protected/', '-o' , 'user=ADC_Exports' , ',domain=kumc',',password=*Ng3QYam', '||', 'true'])
+    p_drive_access_user = 'user=' + os.environ.get('jnk_user')
+    p_drive_access_pass = 'password='+ os.environ.get('jnk_pass')
+
+    subprocess.check_call(['sudo', 'mount','-t', 'cifs', '//kumc-data01/protected/', '/mnt/kumc-data01/protected/', '-o' , p_drive_access_user , ',domain=kumc ,',p_drive_access_pass, '||', 'true'])
     
     # creating export path and filename
     export_filename = request_payload['export_filename']
