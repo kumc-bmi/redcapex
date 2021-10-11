@@ -1,6 +1,5 @@
 import configparser
-from os import subprocess
-import 
+import subprocess
 
 # Function to collect Data from REDCap using request package:
 def make_redcap_api_call(redcap_api_url, data, logging, post):
@@ -33,19 +32,33 @@ def read_config(config_file, logging, Path):
     return config
 
 # Function to place file in the P Drive:
-def shared_location_upload(location_dict, logging, request_payload ):
+def shared_location_upload(logging, request_payload, data_string ):
     p_drive_access_user = os.environ.get('jnk_user')
     p_drive_access_pass = os.environ.get('jnk_pass')
-    subprocess.check_call('')
-
+    subprocess.check_call(['sudo', 'mount','-t', 'cifs', '//kumc-data01/protected/', '/mnt/kumc-data01/protected/', '-o' , 'user=ADC_Exports' , ',domain=kumc',',password=*Ng3QYam', '||', 'true'])
+    
     # creating export path and filename
     export_filename = request_payload['export_filename']
     export_path = request_payload['export_path']
     full_path = join(export_path, export_filename)
+    local_store_jnk = './export'
+    local_path = os.path.join(local_store_jnk, export_filename)
 
     # exporting to file
     full_path = Path(full_path)
-    full_path.write_bytes(data_string)
+    try:
+        full_path.write_bytes(data_string)
+        logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
+    except Exception as e:
+        logging.error("""
+            The error reported while placing the file in P Drive was:
+            %s
+            """ % (e))
+    local_path = Path(local_path)
+    local_path.write_bytes(data_string)
+    logging.info("File has been downloaded at local loc ./export %s ." % (local_path))
+
+    subprocess.check_call(['sudo', 'umount', '-f', '//mnt/kumc-data01/protected/', '||', 'true'])
 
     logging.info("File has been downloaded at %s ." % (full_path))
 
@@ -71,7 +84,8 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         data_string = make_redcap_api_call(
             redcap_api_url, request_payload, logging, post)
 
-        shared_location_upload(request_payload, )
+
+        shared_location_upload(logging, request_payload, data_string )
 
 if __name__ == "__main__":
 
