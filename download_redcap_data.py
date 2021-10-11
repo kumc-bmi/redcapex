@@ -1,5 +1,6 @@
 import configparser
 from os import subprocess
+import 
 
 # Function to collect Data from REDCap using request package:
 def make_redcap_api_call(redcap_api_url, data, logging, post):
@@ -32,7 +33,9 @@ def read_config(config_file, logging, Path):
     return config
 
 # Function to place file in the P Drive:
-def shared_location_upload(location_dict, logging, ):
+def shared_location_upload(location_dict, logging, request_payload ):
+    p_drive_access_user = os.environ.get('jnk_user')
+    p_drive_access_pass = os.environ.get('jnk_pass')
     subprocess.check_call('')
 
     # creating export path and filename
@@ -83,6 +86,10 @@ if __name__ == "__main__":
         from os.path import join
         from sys import argv
         from pathlib2 import Path
+        from dotenv import load_dotenv
+
+        sys.path.append('../')
+        load_dotenv()
 
         logging.basicConfig(level=logging.DEBUG)
 
