@@ -35,35 +35,38 @@ def read_config(config_file, logging, Path):
 
 # Function to place file in the P Drive:
 def shared_location_upload(logging, request_payload, data_string ):
-    p_drive_access_user = 'user=' + os.environ.get('jnk_user')
-    p_drive_access_pass = 'password='+ os.environ.get('jnk_pass')
+    jnk_user_carrier = 'user=' + os.environ.get('jnk_user')
+    jnk_pass_carrier = 'password='+ os.environ.get('jnk_pass')
 
-    subprocess.check_call(['sudo', 'mount','-t', 'cifs', '//kumc-data01/protected/', '/mnt/kumc-data01/protected/', '-o' , p_drive_access_user , ',domain=kumc ,',p_drive_access_pass, '||', 'true'])
+    where_to_save_carrier = os.environ.get('where_to_save')
+
+    subprocess.check_call(['sudo', 'mount','-t', 'cifs', '//kumc-data01/protected/', 'findmnt', '-o' , jnk_user_carrier , ',domain=kumc ,',jnk_pass_carrier, '||', 'true'])
     
-    # creating export path and filename
-    export_filename = request_payload['export_filename']
-    export_path = request_payload['export_path']
-    full_path = join(export_path, export_filename)
+    # Writing files to the local location:
     local_store_jnk = './export'
+    export_filename = request_payload['export_filename']
     local_path = os.path.join(local_store_jnk, export_filename)
-
-    # exporting to file
-    full_path = Path(full_path)
-    try:
-        full_path.write_bytes(data_string)
-        logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
-    except Exception as e:
-        logging.error("""
-            The error reported while placing the file in P Drive was:
-            %s
-            """ % (e))
     local_path = Path(local_path)
     local_path.write_bytes(data_string)
     logging.info("File has been downloaded at local loc ./export %s ." % (local_path))
 
-    subprocess.check_call(['sudo', 'umount', '-f', '//mnt/kumc-data01/protected/', '||', 'true'])
+    if where_to_save_carrier == 'local_and_pdrive':
+        # creating export path and filename and exporting to file
+        export_path = request_payload['export_path']
+        full_path = Path(full_path)
+        try:
+            full_path.write_bytes(data_string)
+            logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
+        except Exception as e:
+            logging.error("""
+                The error reported while placing the file in P Drive was:
+                %s
+                """ % (e))
+    
 
-    logging.info("File has been downloaded at %s ." % (full_path))
+    subprocess.check_call(['sudo', 'umount', '-f', '/mnt/kumc-data01/protected/', '||', 'true'])
+
+    logging.info("File has been downloaded at ")
 
 
 def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api_url):
@@ -87,8 +90,8 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         data_string = make_redcap_api_call(
             redcap_api_url, request_payload, logging, post)
 
-
-        shared_location_upload(logging, request_payload, data_string )
+        if pid_titles == 'ALL' and int(pid_title) != 22394:
+            shared_location_upload(logging, request_payload, data_string)
 
 if __name__ == "__main__":
 
