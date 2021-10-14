@@ -2,10 +2,10 @@ import configparser
 import subprocess
 import sys
 import os
+from Sub_packages_for_utiliy_tasks import Subprocess_calls_PDrive
 
 # Function to collect Data from REDCap using request package:
 def make_redcap_api_call(redcap_api_url, data, logging, post):
-
     try:
         response = post(redcap_api_url, data)
         if response.status_code == 200:
@@ -34,39 +34,50 @@ def read_config(config_file, logging, Path):
     return config
 
 # Function to place file in the P Drive:
-def shared_location_upload(logging, request_payload, data_string ):
-    jnk_user_carrier = 'user=' + os.environ.get('jnk_user')
-    jnk_pass_carrier = 'password='+ os.environ.get('jnk_pass')
+def shared_location_upload(pid_title, logging, request_payload, data_string):
+    jnk_user_carrier = os.environ.get('jnk_user')
+    jnk_pass_carrier = os.environ.get('jnk_pass')
 
     where_to_save_carrier = os.environ.get('where_to_save')
 
-    subprocess.check_call(['sudo', 'mount','-t', 'cifs', '//kumc-data01/protected/', 'findmnt', '-o' , jnk_user_carrier , ',domain=kumc ,',jnk_pass_carrier, '||', 'true'])
+    Subprocess_calls_PDrive.mount_Pdrive_sable(self, jnk_user, jnk_pass, logging)
     
     # Writing files to the local location:
     local_store_jnk = './export'
     export_filename = request_payload['export_filename']
     local_path = os.path.join(local_store_jnk, export_filename)
-    local_path = Path(local_path)
-    local_path.write_bytes(data_string)
+    local_path_1 = Path(local_path)
+    local_path_1.write_bytes(data_string)
     logging.info("File has been downloaded at local loc ./export %s ." % (local_path))
 
-    if where_to_save_carrier == 'local_and_pdrive':
+    if where_to_save_carrier == 'local_and_pdrive' or pid_title == 22394:
         # creating export path and filename and exporting to file
-        export_path = request_payload['export_path']
-        full_path = Path(full_path)
-        try:
-            full_path.write_bytes(data_string)
-            logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
-        except Exception as e:
-            logging.error("""
-                The error reported while placing the file in P Drive was:
-                %s
-                """ % (e))
-    
+        if pid_title == 22394:
+            export_path = request_payload['export_path']
+            full_path = Path(export_path)
+            if export_path in ['./.env/redcap_projects_exports.csv', local_path]:  
+                try:
+                    full_path.write_bytes(data_string)
+                    logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
+                except Exception as e:
+                    logging.error("""
+                        The error reported while placing the file in P Drive was:
+                        %s
+                        """ % (e))
+        else:
+            try:
+                full_path.write_bytes(data_string)
+                logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
+            except Exception as e:
+                logging.error("""
+                    The error reported while placing the file in P Drive was:
+                    %s
+                    """ % (e))
 
-    subprocess.check_call(['sudo', 'umount', '-f', '/mnt/kumc-data01/protected/', '||', 'true'])
 
-    logging.info("File has been downloaded at ")
+    Subprocess_calls_PDrive.unmount_PDrive_sable(self, logging)
+
+    logging.info("File has been downloaded successfull")
 
 
 def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api_url):
@@ -90,8 +101,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         data_string = make_redcap_api_call(
             redcap_api_url, request_payload, logging, post)
 
-        if pid_titles == 'ALL' and int(pid_title) != 22394:
-            shared_location_upload(logging, request_payload, data_string)
+        shared_location_upload(pid_title, logging, request_payload, data_string)
 
 if __name__ == "__main__":
 
