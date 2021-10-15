@@ -1,4 +1,4 @@
-run: clean venv
+run: 
 	. venv/bin/activate && \
 	which python3 && \
 	mkdir -p ./export && \
@@ -31,7 +31,8 @@ clean: venv_clean
 	rm -rf ./.env/redcap_projects_exports.csv
 	rm -rf ./.env/redcap_projects_exports.ini
 	
-install_python3:
-	sudo yum install -y python3-pip
+install_python3_cifs:
+	sudo yum install -y python3-pip cifs-utils
 	python3 -m pip3 install --user --upgrade pip
 	python3 -m pip3 install --user virtualenv
+
