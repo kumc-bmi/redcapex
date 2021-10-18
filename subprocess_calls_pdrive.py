@@ -26,3 +26,12 @@ class Subprocess_calls_pdrive:
                 The unmounting was unsuccessfull with the exception:
                 %s
                 """ % (e))
+
+    def copy_file_pdrive(self, logging, source_path, dest_path):
+        try:
+            subprocess.check_call('sudo cp -r -f %s %s'%(source_path, dest_path), shell=True) 
+        except Exception as e:
+            logging.error("""
+                The copy of file from local ./export to P_drive was unsuccessfull with the exception:
+                %s
+                """ % (e))

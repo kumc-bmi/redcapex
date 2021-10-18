@@ -1,4 +1,4 @@
-run: 
+run: clean venv
 	. venv/bin/activate && \
 	which python3 && \
 	mkdir -p ./export && \

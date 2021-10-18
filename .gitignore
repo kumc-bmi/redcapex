@@ -3,3 +3,6 @@ export
 venv
 *.ipynb
 .ipynb_checkpoints
+*.pyc
+__pycache__
+__pycache__/subprocess_calls_pdrive.cpython-36.pyc
