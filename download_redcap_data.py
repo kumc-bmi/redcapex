@@ -36,8 +36,8 @@ def read_config(config_file, logging, Path):
     return config
 
 # Function to place file in the P Drive:
-def shared_location_upload(pid_title, logging, request_payload, data_string, subprs1):
-    Config_REDCap_proj_id_carrier = os.environ.get('Config_REDCap_Project_ID')
+def shared_location_upload(pid_title, logging, request_payload, data_string, pdrive):
+    REDCap_Export_Metadata_secrets_pid = os.environ.get('Config_REDCap_Project_ID')
     where_to_save_carrier = os.environ.get('where_to_save')
 
     # Writing files to the local location:
@@ -48,42 +48,26 @@ def shared_location_upload(pid_title, logging, request_payload, data_string, sub
     local_path_1.write_bytes(data_string)
     logging.info("File has been downloaded at local loc ./export %s ." % (local_path))
 
-    if where_to_save_carrier == 'local_and_pdrive' or pid_title == Config_REDCap_proj_id_carrier:
+    if where_to_save_carrier == 'local_and_pdrive' and pid_title != REDCap_Export_Metadata_secrets_pid:
         # creating export path and filename and exporting to file
 
-        
-        # testing for project not in the config project:
-        if pid_title == Config_REDCap_proj_id_carrier:
-            print("entered config_proj")
-            export_path = request_payload['export_path']
-            export_path = export_path.replace('\\', '/')
-            full_path = pathlib2.Path(export_path)
-            if export_path in ['./.env/redcap_projects_exports.csv', local_path]:  
-                try:
-                    full_path.write_bytes(data_string)
-                    logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
-                except Exception as e:
-                    logging.error("""
-                        The error reported while placing the file in P Drive was:
-                        %s
-                        """ % (e))
-        else:
-            print("entered the non config_proj")
-            export_path = request_payload['export_path']
-            export_path = export_path.replace('\\', '/')
-            export_path_comp_list = export_path.split('/')
-            export_path_comp_list.remove(request_payload['export_filename'])
-            export_path_1 = '/'.join(export_path_comp_list)
-            full_path = pathlib2.Path(export_path_1)
-            try:
-                ### full_path.write_bytes(data_string)
-                subprs1.copy_file_pdrive(logging, local_path_1, os.environ.get('p_Drive_mount_sable'))
-                logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
-            except Exception as e:
-                logging.error("""
-                    The error reported while placing the file in P Drive was:
-                    %s
-                    """ % (e))
+       
+        print("entered the non config_proj")
+        export_path = request_payload['export_path']
+        export_path = export_path.replace('\\', '/')
+        export_path_comp_list = export_path.split('/')
+        export_path_comp_list.remove(request_payload['export_filename'])
+        export_path_1 = '/'.join(export_path_comp_list)
+        full_path = pathlib2.Path(export_path_1)
+        try:
+            ### full_path.write_bytes(data_string)
+            pdrive.copy_file(logging, local_path_1, os.environ.get('p_Drive_mount_sable'))
+            logging.info("File has been downloaded at P_drive at: %s ." % (full_path))
+        except Exception as e:
+            logging.error("""
+                The error reported while placing the file in P Drive was:
+                %s
+                """ % (e))
 
     logging.info("File has been downloaded successfull")
 
@@ -91,17 +75,22 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
     # read config file
     config = read_config(config_file, logging, Path)
 
-    jnk_user_carrier = os.environ.get('jnk_user')
-    jnk_pass_carrier = os.environ.get('jnk_pass')
+    jnk_user = os.environ.get('jnk_user')
+    jnk_pass = os.environ.get('jnk_pass')
+
+    p_Drive_path = os.environ.get('p_Drive_path')
+    p_Drive_mount_sable = os.environ.get('p_Drive_mount_sable')
+    p_Drive_domain = os.environ.get('p_Drive_domain')
     
-    subprs1 = Subprocess_calls_pdrive()
-    subprs1.mount_Pdrive_sable(jnk_user_carrier, jnk_pass_carrier, logging)
+    pdrive = NetworkDrive(p_Drive_path, p_Drive_mount_sable, p_Drive_domain, logging)
+    pdrive.mount(jnk_user, jnk_pass)
 
     # parse config
     #redcap_api_url = config._sections['global']['redcap_api_url']
     if pid_titles == 'ALL':
         pid_titles = [section for section in config.sections()]
     else:
+       # or read config of 1 pid even though variables is pid_titles
         pid_titles = [pid_titles]
 
     for pid_title in pid_titles:
@@ -114,9 +103,9 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         data_string = make_redcap_api_call(
             redcap_api_url, request_payload, logging, post)
 
-        shared_location_upload(pid_title, logging, request_payload, data_string, subprs1)
+        shared_location_upload(pid_title, logging, request_payload, data_string, pdrive)
 
-    subprs1.unmount_PDrive_sable(logging)
+    pdrive.unmount()
 
 
 if __name__ == "__main__":
