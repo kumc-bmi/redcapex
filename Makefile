@@ -3,11 +3,11 @@ run: clean venv
 	which python3 && \
 	mkdir -p ./export && \
 	# download which projects needs to export and its token && \
-	python3 download_redcap_data.py .env/REDCap_Export_Metadata_config.ini 22394 'https://redcap.kumc.edu/api/' && \
+	python3 download_redcap_data.py .env/REDCap_Export_Metadata_config.ini 22394 'https://redcap.kumc.edu/api/' local && \
 	# converted downloaded csv with token into ini && \
 	python3 convert_csv_metadata_into_ini_format.py '.env/redcap_projects_exports.csv'  '.env/redcap_projects_exports.ini' && \
 	# download all listed redcap projects && \
-	python3 download_redcap_data.py .env/redcap_projects_exports.ini ALL 'https://redcap.kumc.edu/api/'
+	python3 download_redcap_data.py .env/redcap_projects_exports.ini ALL 'https://redcap.kumc.edu/api/' local_and_pdrive
 
 
 venv: venv_clean
