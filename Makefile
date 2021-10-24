@@ -10,7 +10,7 @@ run: clean venv
 	python3 download_redcap_data.py .env/redcap_projects_exports.ini ALL 'https://redcap.kumc.edu/api/' local_and_pdrive
 
 
-venv: venv_clean
+venv:
 	# "creating python3 virtual env"
 	python3 -m pip install --upgrade pip
 	python3 -m pip install virtualenv
