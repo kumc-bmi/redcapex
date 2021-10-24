@@ -31,7 +31,8 @@ def read_config(config_file, logging, Path):
     return config
 
 
-def save_file(folder_path, file_name, data_string, join, Path, logging):
+def save_file(folder_path, file_name, data_string, join, Path, logging,
+              record_id, title):
     """Save file to local or shared location
 
     Args:
@@ -45,8 +46,9 @@ def save_file(folder_path, file_name, data_string, join, Path, logging):
     full_path = full_path.replace('\\', '/')
     full_path = Path(full_path)
     full_path.write_bytes(data_string)
-    logging.info("File has been downloaded at %s " %
-                 (full_path))
+    logging.info("""
+    Recrod_id:%s and title:%s File has been downloaded at %s
+    """ % (record_id, title, full_path))
 
 
 def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api_url, where_to_save):
@@ -56,7 +58,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
     config = read_config(config_file, logging, Path)
 
     # parse config
-    #redcap_api_url = config._sections['global']['redcap_api_url']
+    # redcap_api_url = config._sections['global']['redcap_api_url']
     if pid_titles == 'ALL':
         pid_titles = [section for section in config.sections()]
     else:
@@ -72,21 +74,24 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         data_string = make_redcap_api_call(
             redcap_api_url, request_payload, logging, post)
 
+        record_id = request_payload['record_id']
+        title = request_payload['title']
+
         # creating export path and filename
         file_name = request_payload['export_filename']
         local_export_path = request_payload['local_export_path']
 
         save_file(local_export_path, file_name,
-                  data_string, join, Path, logging)
+                  data_string, join, Path, logging, record_id, title)
 
         try:
 
             if where_to_save == "local_and_pdrive":
                 shared_export_path = request_payload['export_path']
                 save_file(shared_export_path, file_name,
-                          data_string, join, Path, logging)
+                          data_string, join, Path, logging, record_id, title)
 
-        except Exception as e:
+        except FileNotFoundError as e:
             error_str = "Issue saving file to shared location: %s  and excpetion is: %s" % (
                 shared_export_path, e)
 
@@ -94,7 +99,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
             error_list.append(shared_export_path)
 
     if len(error_list) > 0:
-        logging.error("""All files are saved local location and shared location , EXCEPT following files: 
+        logging.error("""All files are saved local location and shared location , EXCEPT following files:
         %s
         """ % (error_list))
         raise()
