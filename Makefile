@@ -3,14 +3,14 @@ run: clean venv
 	which python3 && \
 	mkdir -p ./export && \
 	# download which projects needs to export and its token && \
-	python3 download_redcap_data.py .env/REDCap_Export_Metadata_config.ini 22394 'https://redcap.kumc.edu/api/' && \
+	python3 download_redcap_data.py .env/REDCap_Export_Metadata_config.ini 22394 'https://redcap.kumc.edu/api/' local && \
 	# converted downloaded csv with token into ini && \
 	python3 convert_csv_metadata_into_ini_format.py '.env/redcap_projects_exports.csv'  '.env/redcap_projects_exports.ini' && \
 	# download all listed redcap projects && \
-	python3 download_redcap_data.py .env/redcap_projects_exports.ini ALL 'https://redcap.kumc.edu/api/'
+	python3 download_redcap_data.py .env/redcap_projects_exports.ini ALL 'https://redcap.kumc.edu/api/' local_and_pdrive
 
 
-venv: venv_clean
+venv:
 	# "creating python3 virtual env"
 	python3 -m pip install --upgrade pip
 	python3 -m pip install virtualenv
@@ -28,10 +28,12 @@ venv_clean:
 	rm -rf ./venv
 
 
-clean: venv_clean	
+clean:	
 	rm -rf ./export
 	rm -rf ./.env/redcap_projects_exports.csv
 	rm -rf ./.env/redcap_projects_exports.ini
 	
-install_python3:
-	sudo yum install -y python3-pip
+install_python3_cifs:
+	sudo yum install -y python3-pip cifs-utils
+	python3 -m pip3 install --user --upgrade pip
+	python3 -m pip3 install --user virtualenv

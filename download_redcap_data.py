@@ -31,8 +31,27 @@ def read_config(config_file, logging, Path):
     return config
 
 
-def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api_url):
+def save_file(folder_path, file_name, data_string, join, Path, logging):
+    """Save file to local or shared location
 
+    Args:
+        folder_path (string): folder_path
+        file_name (string): file_name
+        data_string (string): data which will be written to file
+    """
+
+    full_path = join(folder_path, file_name)
+    # taking care of windows path
+    full_path = full_path.replace('\\', '/')
+    full_path = Path(full_path)
+    full_path.write_bytes(data_string)
+    logging.info("File has been downloaded at %s " %
+                 (full_path))
+
+
+def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api_url, where_to_save):
+
+    error_list = []
     # read config file
     config = read_config(config_file, logging, Path)
 
@@ -54,15 +73,31 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
             redcap_api_url, request_payload, logging, post)
 
         # creating export path and filename
-        export_filename = request_payload['export_filename']
-        export_path = request_payload['export_path']
-        full_path = join(export_path, export_filename)
+        file_name = request_payload['export_filename']
+        local_export_path = request_payload['local_export_path']
 
-        # exporting to file
-        full_path = Path(full_path)
-        full_path.write_bytes(data_string)
+        save_file(local_export_path, file_name,
+                  data_string, join, Path, logging)
 
-        logging.info("File has been downloaded at %s ." % (full_path))
+        try:
+
+            if where_to_save == "local_and_pdrive":
+                shared_export_path = request_payload['export_path']
+                save_file(shared_export_path, file_name,
+                          data_string, join, Path, logging)
+
+        except Exception as e:
+            error_str = "Issue saving file to shared location: %s  and excpetion is: %s" % (
+                shared_export_path, e)
+
+            logging.error(error_str)
+            error_list.append(shared_export_path)
+
+    if len(error_list) > 0:
+        logging.error("""All files are saved local location and shared location , EXCEPT following files: 
+        %s
+        """ % (error_list))
+        raise()
 
 
 if __name__ == "__main__":
@@ -81,12 +116,12 @@ if __name__ == "__main__":
 
         logging.basicConfig(level=logging.DEBUG)
 
-        if len(argv) != 4:
+        if len(argv) != 5:
             logging.error("""Wrong format or arguments :
              please try like 'python download_recap_data.py config_file pid""")
 
-        [config_file, pid_titles, redcap_api_url] = argv[1:]
+        [config_file, pid_titles, redcap_api_url, where_to_save] = argv[1:]
         main(config_file, pid_titles, logging, post,
-             join, environ, Path, redcap_api_url)
+             join, environ, Path, redcap_api_url, where_to_save)
 
     _main_ocap()
