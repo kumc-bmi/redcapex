@@ -28,7 +28,7 @@ venv_clean:
 	rm -rf ./venv
 
 
-clean: venv_clean	
+clean:	
 	rm -rf ./export
 	rm -rf ./.env/redcap_projects_exports.csv
 	rm -rf ./.env/redcap_projects_exports.ini
