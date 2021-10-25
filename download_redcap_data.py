@@ -4,19 +4,20 @@ import configparser
 def make_redcap_api_call(redcap_api_url, data, logging, post):
 
     try:
+        log_error_str = """
+            redcap rest call was unsuccessful
+            or target server is down/ check configuration
+            %s
+            """ % (data)
         response = post(redcap_api_url, data)
         if response.status_code == 200:
             return response.content
         else:
-            raise Exception('%s - %s' %
-                            (response.status_code, response.content))
+            logging.error('%s : status_code: %s' %
+                          (log_error_str, response.status_code))
 
     except Exception as e:
-        logging.error("""
-            redcap rest call was unsuccessful
-            or target server is down/ check configuration
-            %s
-            """ % (e))
+        logging.error('log_error_str : %s' % (e))
 
 
 def read_config(config_file, logging, Path):
@@ -80,6 +81,12 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         # creating export path and filename
         file_name = request_payload['export_filename']
         local_export_path = request_payload['local_export_path']
+        shared_export_path = request_payload['export_path']
+
+        if data_string == None:
+            # API called failed
+            error_list.append(shared_export_path)
+            break
 
         save_file(local_export_path, file_name,
                   data_string, join, Path, logging, record_id, title)
@@ -87,7 +94,6 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
         try:
 
             if where_to_save == "local_and_pdrive":
-                shared_export_path = request_payload['export_path']
                 save_file(shared_export_path, file_name,
                           data_string, join, Path, logging, record_id, title)
 
