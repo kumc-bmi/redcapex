@@ -85,7 +85,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
 
         if data_string == None:
             # API called failed
-            error_list.append(shared_export_path)
+            error_list.append(record_id)
             break
 
         save_file(local_export_path, file_name,
@@ -102,7 +102,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
                 shared_export_path, e)
 
             logging.error(error_str)
-            error_list.append(shared_export_path)
+            error_list.append(record_id)
 
     if len(error_list) > 0:
         logging.error("""All files are saved local location and shared location , EXCEPT following files:
