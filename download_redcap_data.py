@@ -2,7 +2,6 @@ import configparser
 
 
 def make_redcap_api_call(redcap_api_url, data, logging, post):
-
     try:
         log_error_str = """
             redcap rest call was unsuccessful
@@ -48,7 +47,7 @@ def save_file(folder_path, file_name, data_string, join, Path, logging,
     full_path = Path(full_path)
     full_path.write_bytes(data_string)
     logging.info("""
-    Recrod_id:%s and title:%s File has been downloaded at %s
+    REDCap_Export_Metadata_Record_id:%s and title:%s File has been downloaded at %s
     """ % (record_id, title, full_path))
 
 
@@ -70,7 +69,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
 
         # reading key from environment variable and replace string with key
         # request_payload['token'] = environ[request_payload['token']]
-
+        
         # send request to redcap
         data_string = make_redcap_api_call(
             redcap_api_url, request_payload, logging, post)
