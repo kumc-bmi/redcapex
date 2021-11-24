@@ -1,5 +1,9 @@
 import configparser
+import os
 
+def mkdirp(newpath):
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
 
 def make_redcap_api_call(redcap_api_url, data, logging, post):
 
@@ -87,7 +91,8 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
             # API called failed
             error_list.append(record_id)
             break
-
+        
+        mkdirp(local_export_path)
         save_file(local_export_path, file_name,
                   data_string, join, Path, logging, record_id, title)
 
@@ -105,7 +110,7 @@ def main(config_file, pid_titles, logging, post, join, environ, Path, redcap_api
             error_list.append(record_id)
 
     if len(error_list) > 0:
-        logging.error("""All files are saved local location and shared location , EXCEPT following files:
+        logging.error("""All files are saved local location and shared location , EXCEPT following files with following recording id:
         %s
         """ % (error_list))
         raise()
