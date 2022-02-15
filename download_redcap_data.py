@@ -52,7 +52,7 @@ def save_file(folder_path, file_name, data_string, join, Path, logging,
     full_path = Path(full_path)
     full_path.write_bytes(data_string)
     logging.info("""
-    Recrod_id:%s and title:%s File has been downloaded at %s
+    Record_id:%s and title:%s File has been downloaded at %s
     """ % (record_id, title, full_path))
 
 
