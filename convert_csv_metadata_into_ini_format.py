@@ -16,7 +16,9 @@
 # +
 import pandas as pd
 from sys import argv
-
+case_sensitive_param= {
+    'exportdataaccessgroups': 'exportDataAccessGroups'
+}
 
 def convert_csv_metadata_into_ini_format(input_csv_path, output_ini_path):
 
@@ -29,6 +31,8 @@ def convert_csv_metadata_into_ini_format(input_csv_path, output_ini_path):
         output.append(f'[{title}]')
         for key in config.keys():
             value = config[key]
+            if key in case_sensitive_param.keys():
+                key = case_sensitive_param[key]
             output.append(f'{key}:{value}')
         output.append('\n')
     output_string = "\n".join(output)
